@@ -53,10 +53,10 @@
     <ConfigurationWrapper VM_VAR="JAVA_OPTS" RunnerId="Run">
       <option name="USE_ENV_VARIABLES" value="true" />
       <STARTUP>
-        <option name="USE_DEFAULT" value="true" />
-        <option name="SCRIPT" value="" />
+        <option name="USE_DEFAULT" value="false" />
+        <option name="SCRIPT" value="$PROJECT_DIR$/../../../../wildfly-31.0.1.Final/bin/standalone.bat" />
         <option name="VM_PARAMETERS" value="" />
-        <option name="PROGRAM_PARAMETERS" value="" />
+        <option name="PROGRAM_PARAMETERS" value="-c standalone-full.xml" />
       </STARTUP>
       <SHUTDOWN>
         <option name="USE_DEFAULT" value="true" />
