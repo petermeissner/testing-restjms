@@ -11,12 +11,14 @@ public class JmsConnector {
 
     int messageReceiveCounter = 0;
     int messageSendCounter = 0;
-    @Resource(mappedName = "jms/ReplyQueueConnectionFactory")
+    
+    @Resource(mappedName = "java:/ConnectionFactory")
     private ConnectionFactory replyQueueConnectionFactory;
-    @Resource(mappedName = "jms/ReplyQueue")
+    
+    @Resource(mappedName = "java:jboss/exported/jms/queue/inbound")
     private Queue replyQueue;
 
-    public void send() throws NamingException, JMSException {
+    public String send(String msg_text) throws NamingException, JMSException {
         try {
             Connection jmsConn = replyQueueConnectionFactory.createConnection();
             if (jmsConn != null) {
@@ -26,7 +28,7 @@ public class JmsConnector {
                     MessageProducer messageProducer = jmsSession.createProducer(replyQueue);
 
                     TextMessage message = jmsSession.createTextMessage();
-                    message.setText("Message Text");
+                    message.setText(msg_text);
                     messageProducer.send(message);
                 } finally {
                     jmsConn.close();
@@ -34,8 +36,10 @@ public class JmsConnector {
             }
         } catch (JMSException ex) {
             System.err.println("Error sending message: " + ex);
+            return "Error sending message: " + ex;
         }
-    }
 
+        return "OK, Message sent";
+    }
 
 }

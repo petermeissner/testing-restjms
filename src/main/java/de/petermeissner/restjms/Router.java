@@ -14,6 +14,9 @@ public class Router {
     @EJB
     TestConnector testConnector;
 
+    @EJB
+    JmsConnector jmsConnector;
+
     @GET
     @Produces("text/html")
     public String apiRoot() {
@@ -28,18 +31,33 @@ public class Router {
     @GET
     @Path("/v1/test-message-get")
     @Produces("text/plain")
-    public String messageGet() {
+    public String testMessageGet() {
         String m = testConnector.receive();
         return "here you go: " + m;
     }
 
-
     @GET
     @Path("/v1/test-message-add")
     @Produces("text/plain")
-    public String messageAdd() {
-        testConnector.send("blah blöah blah");
-        testConnector.messageSendCounter++;
-        return "send message: " + testConnector.messageSendCounter;
+    public String testMessageAdd() {
+        String res = testConnector.send("blah blöah blah");
+        return "send message: " + res;
+    }
+
+    @GET
+    @Path("/v1/message-get")
+    @Produces("text/plain")
+    public String messageGet() {
+//        String m = jmsConnector.receive("Wohooooo!s");
+//        return "Message from queue: " + m;
+        return "not implemented yet";
+    }
+
+    @GET
+    @Path("/v1/message-add")
+    @Produces("text/plain")
+    public String messageAdd() throws NamingException, JMSException {
+        String res = jmsConnector.send("blah blöah blah");
+        return "Message to queue: " + res;
     }
 }
