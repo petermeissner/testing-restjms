@@ -22,7 +22,12 @@ public class JmsConnector {
     @Resource(mappedName = "java:jboss/exported/jms/queue/inbound")
     private Queue jmsQueueInbound;
 
-
+    /**
+     * Receives a message from the JMS queue.
+     *
+     * @return the received message as a String, or an error message if an exception occurs
+     */
+    @Lock(LockType.READ)
     public String receive() {
         String res = null;
 
@@ -32,12 +37,20 @@ public class JmsConnector {
                 try {
                     // preparation
                     jmsConn.start();
-                    Session jmsSession = jmsConn.createSession(true, Session.AUTO_ACKNOWLEDGE);
+                    Session jmsSession = jmsConn.createSession(true, Session.CLIENT_ACKNOWLEDGE);
                     MessageConsumer jmsConsumer = jmsSession.createConsumer(jmsQueueInbound);
 
                     // receive
                     TextMessage message = (TextMessage) jmsConsumer.receiveNoWait();
-                    res = message.getText();
+
+                    // handle no message / message received
+                    if (message == null) {
+                        return "No message received";
+                    } else {
+                        res = message.getText();
+                    }
+
+                    // acknowledge
                     jmsSession.commit();
                 } finally {
                     jmsConn.close();
@@ -48,6 +61,7 @@ public class JmsConnector {
             return "Error receiving message: " + ex;
         }
 
+        messageSendCounter++;
         return res;
     }
 
