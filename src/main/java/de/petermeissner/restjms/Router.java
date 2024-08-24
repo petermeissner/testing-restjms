@@ -1,13 +1,11 @@
 package de.petermeissner.restjms;
 
 import jakarta.ejb.EJB;
-import jakarta.jms.JMSException;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
-import javax.naming.NamingException;
 import java.util.List;
 
 @Path("/")
@@ -17,19 +15,18 @@ public class Router {
     TestConnector testConnector;
 
     @EJB
-    JmsConnector jmsConnector;
+    JmsOutbound jmsOutbound;
+
+    @EJB
+    JmsInbound jmsInbound;
+
 
     @GET
     @Produces("text/html")
     public String apiRoot() {
-        return "<html>" +
-                "<h1>API-Root</h1>" +
-                "\n<br><a href=/restjms/api/v1/test-message-add>/restjms/api/v1/test-message-add</a>" +
-                "\n<br><a href=/restjms/api/v1/test-message-get>/restjms/api/v1/test-message-get</a>" +
-                "\n<br><a href=/restjms/api/v1/message-add>/restjms/api/v1/message-add</a>" +
-                "\n<br><a href=/restjms/api/v1/message-browse>/restjms/api/v1/message-browse</a>" +
-                "\n<br><a href=/restjms/api/v1/message-get>/restjms/api/v1/message-get</a>";
+        return RouterHelper.getHTTPEndpoinst(Router.class);
     }
+
 
     @GET
     @Path("/v1/test-message-get")
@@ -51,14 +48,14 @@ public class Router {
     @Path("/v1/message-get")
     @Produces("text/plain")
     public String messageGet() {
-        return jmsConnector.receive();
+        return jmsOutbound.getMessageFromQueue();
     }
 
     @GET
     @Path("/v1/message-add")
     @Produces("text/plain")
     public String messageAdd() {
-        String res = jmsConnector.send("blah blöah blah");
+        String res = jmsInbound.addMessageToQueue("blah blöah blah");
         return "Message to queue: " + res;
     }
 
@@ -66,22 +63,15 @@ public class Router {
     @Path("/v1/message-browse/json")
     @Produces(MediaType.APPLICATION_JSON)
     public List<String> messageBrowseJSON() {
-        return jmsConnector.browse();
+        return jmsOutbound.browse();
     }
 
     @GET
     @Path("/v1/message-browse/xml")
     @Produces(MediaType.TEXT_XML)
     public JaxbList<String> messageBrowseXML() {
-        List<String> msgs = jmsConnector.browse();
+        List<String> msgs = jmsOutbound.browse();
         return new JaxbList(msgs);
     }
 
-
-    @GET
-    @Path("/test2")
-    public JaxbList test2() {
-        List<String> msgs = jmsConnector.browse();
-        return new JaxbList(msgs);
-    }
 }
